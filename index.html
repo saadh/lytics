@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Education Holdings Analytics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.13.6/dist/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.13.6/dist/antd.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          sans-serif;
+        background: #f5f7fb;
+        margin: 0;
+      }
+      .page-header {
+        background: linear-gradient(120deg, #10239e, #1677ff);
+        color: white;
+        padding: 24px 32px;
+        border-bottom: 1px solid #e6f4ff;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .page-header h1 {
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .page-subtitle {
+        opacity: 0.85;
+        margin-top: 4px;
+      }
+      .content {
+        padding: 24px 32px 48px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+      }
+      .section-title {
+        margin: 24px 0 12px;
+        font-weight: 700;
+        color: #1f2937;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #e6f4ff;
+        color: #0958d9;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border-radius: 16px;
+        background: #f4f6fb;
+        font-weight: 600;
+        color: #344054;
+      }
+      .pill strong {
+        color: #0958d9;
+      }
+      .saved-view {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        background: white;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .saved-view:hover {
+        border-color: #1677ff;
+        box-shadow: 0 8px 26px rgba(16, 35, 158, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>Education Holdings Analytics</h1>
+      <div class="page-subtitle">
+        Executive-grade visibility across brands, branches, and levels in a single secure view.
+      </div>
+    </div>
+    <div id="root" class="content"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/antd@5.13.6/dist/antd.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useMemo, useState, useEffect } = React;
+      const {
+        Layout,
+        Row,
+        Col,
+        Card,
+        Statistic,
+        Select,
+        Space,
+        Progress,
+        Tag,
+        Divider,
+        Segmented,
+        TreeSelect,
+        Button,
+        Input,
+        Table,
+        List,
+        Tooltip,
+        Tabs,
+        Typography,
+        DatePicker,
+        Flex,
+      } = antd;
+
+      const { Title, Paragraph, Text } = Typography;
+      const { RangePicker } = DatePicker;
+
+      const defaultData = [
+        {
+          id: 'rowad',
+          name: 'Rowad',
+          curriculum: 'National',
+          brandsGrouping: 'National',
+          branches: [
+            {
+              id: 'rowad-ish',
+              name: 'Rowad Ishbiliya',
+              city: 'Riyadh',
+              levels: [
+                {
+                  id: 'ish-kg',
+                  name: 'KG',
+                  students: 420,
+                  verified: 360,
+                  dismissals: 310,
+                  attendance: 330,
+                  canteen: 240,
+                  transportEnrolled: 160,
+                  transportActive: 140,
+                  adoption: {
+                    '30d': { dismissals: 210, attendance: 240, canteen: 140, transport: 120 },
+                    '60d': { dismissals: 260, attendance: 280, canteen: 170, transport: 140 },
+                    '90d': { dismissals: 290, attendance: 305, canteen: 190, transport: 145 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 11, requests: 420, attMarked: 360, attDays: 18, avgDelivery: 6.5 },
+                    '60d': { undelivered: 16, requests: 810, attMarked: 690, attDays: 36, avgDelivery: 6.7 },
+                    '90d': { undelivered: 22, requests: 1200, attMarked: 1050, attDays: 52, avgDelivery: 7.0 },
+                  },
+                },
+                {
+                  id: 'ish-pri',
+                  name: 'Primary',
+                  students: 760,
+                  verified: 640,
+                  dismissals: 560,
+                  attendance: 590,
+                  canteen: 470,
+                  transportEnrolled: 360,
+                  transportActive: 320,
+                  adoption: {
+                    '30d': { dismissals: 410, attendance: 440, canteen: 330, transport: 240 },
+                    '60d': { dismissals: 520, attendance: 570, canteen: 390, transport: 280 },
+                    '90d': { dismissals: 610, attendance: 640, canteen: 450, transport: 320 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 19, requests: 1080, attMarked: 880, attDays: 22, avgDelivery: 5.8 },
+                    '60d': { undelivered: 24, requests: 1980, attMarked: 1630, attDays: 46, avgDelivery: 6.0 },
+                    '90d': { undelivered: 35, requests: 2890, attMarked: 2400, attDays: 70, avgDelivery: 6.2 },
+                  },
+                },
+                {
+                  id: 'ish-sec',
+                  name: 'Secondary',
+                  students: 580,
+                  verified: 480,
+                  dismissals: 460,
+                  attendance: 480,
+                  canteen: 410,
+                  transportEnrolled: 240,
+                  transportActive: 200,
+                  adoption: {
+                    '30d': { dismissals: 340, attendance: 350, canteen: 270, transport: 180 },
+                    '60d': { dismissals: 400, attendance: 420, canteen: 300, transport: 200 },
+                    '90d': { dismissals: 470, attendance: 490, canteen: 340, transport: 210 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 8, requests: 640, attMarked: 520, attDays: 20, avgDelivery: 7.1 },
+                    '60d': { undelivered: 15, requests: 1180, attMarked: 980, attDays: 42, avgDelivery: 7.0 },
+                    '90d': { undelivered: 20, requests: 1690, attMarked: 1400, attDays: 64, avgDelivery: 6.8 },
+                  },
+                },
+              ],
+            },
+            {
+              id: 'rowad-izd',
+              name: 'Rowad Izdihar',
+              city: 'Riyadh',
+              levels: [
+                {
+                  id: 'izd-kg',
+                  name: 'KG',
+                  students: 360,
+                  verified: 300,
+                  dismissals: 270,
+                  attendance: 280,
+                  canteen: 190,
+                  transportEnrolled: 120,
+                  transportActive: 100,
+                  adoption: {
+                    '30d': { dismissals: 180, attendance: 210, canteen: 130, transport: 90 },
+                    '60d': { dismissals: 220, attendance: 260, canteen: 150, transport: 110 },
+                    '90d': { dismissals: 250, attendance: 290, canteen: 170, transport: 120 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 9, requests: 310, attMarked: 250, attDays: 16, avgDelivery: 6.9 },
+                    '60d': { undelivered: 14, requests: 620, attMarked: 520, attDays: 34, avgDelivery: 6.8 },
+                    '90d': { undelivered: 19, requests: 910, attMarked: 800, attDays: 52, avgDelivery: 6.6 },
+                  },
+                },
+                {
+                  id: 'izd-pri',
+                  name: 'Primary',
+                  students: 640,
+                  verified: 540,
+                  dismissals: 500,
+                  attendance: 520,
+                  canteen: 390,
+                  transportEnrolled: 300,
+                  transportActive: 270,
+                  adoption: {
+                    '30d': { dismissals: 320, attendance: 360, canteen: 260, transport: 210 },
+                    '60d': { dismissals: 410, attendance: 450, canteen: 310, transport: 250 },
+                    '90d': { dismissals: 470, attendance: 510, canteen: 340, transport: 270 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 15, requests: 890, attMarked: 740, attDays: 20, avgDelivery: 6.0 },
+                    '60d': { undelivered: 22, requests: 1580, attMarked: 1330, attDays: 44, avgDelivery: 6.2 },
+                    '90d': { undelivered: 30, requests: 2320, attMarked: 2000, attDays: 68, avgDelivery: 6.3 },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'me-international',
+          name: 'Middle East International',
+          curriculum: 'International',
+          brandsGrouping: 'International',
+          branches: [
+            {
+              id: 'me-jed',
+              name: 'MEI Jeddah',
+              city: 'Jeddah',
+              levels: [
+                {
+                  id: 'jed-kg',
+                  name: 'KG',
+                  students: 300,
+                  verified: 260,
+                  dismissals: 230,
+                  attendance: 250,
+                  canteen: 180,
+                  transportEnrolled: 140,
+                  transportActive: 120,
+                  adoption: {
+                    '30d': { dismissals: 170, attendance: 200, canteen: 140, transport: 110 },
+                    '60d': { dismissals: 210, attendance: 240, canteen: 170, transport: 130 },
+                    '90d': { dismissals: 240, attendance: 270, canteen: 200, transport: 140 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 7, requests: 280, attMarked: 230, attDays: 14, avgDelivery: 7.3 },
+                    '60d': { undelivered: 12, requests: 530, attMarked: 440, attDays: 30, avgDelivery: 7.1 },
+                    '90d': { undelivered: 18, requests: 760, attMarked: 650, attDays: 46, avgDelivery: 6.9 },
+                  },
+                },
+                {
+                  id: 'jed-upper',
+                  name: 'Upper School',
+                  students: 540,
+                  verified: 470,
+                  dismissals: 430,
+                  attendance: 450,
+                  canteen: 350,
+                  transportEnrolled: 260,
+                  transportActive: 230,
+                  adoption: {
+                    '30d': { dismissals: 310, attendance: 340, canteen: 260, transport: 190 },
+                    '60d': { dismissals: 370, attendance: 410, canteen: 300, transport: 220 },
+                    '90d': { dismissals: 420, attendance: 470, canteen: 340, transport: 240 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 12, requests: 710, attMarked: 580, attDays: 18, avgDelivery: 6.4 },
+                    '60d': { undelivered: 18, requests: 1360, attMarked: 1120, attDays: 40, avgDelivery: 6.5 },
+                    '90d': { undelivered: 26, requests: 2030, attMarked: 1690, attDays: 62, avgDelivery: 6.6 },
+                  },
+                },
+              ],
+            },
+            {
+              id: 'me-dmm',
+              name: 'MEI Dammam',
+              city: 'Dammam',
+              levels: [
+                {
+                  id: 'dmm-mid',
+                  name: 'Middle School',
+                  students: 400,
+                  verified: 340,
+                  dismissals: 320,
+                  attendance: 330,
+                  canteen: 250,
+                  transportEnrolled: 190,
+                  transportActive: 170,
+                  adoption: {
+                    '30d': { dismissals: 220, attendance: 250, canteen: 190, transport: 140 },
+                    '60d': { dismissals: 270, attendance: 300, canteen: 220, transport: 160 },
+                    '90d': { dismissals: 310, attendance: 340, canteen: 240, transport: 170 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 10, requests: 540, attMarked: 440, attDays: 20, avgDelivery: 6.7 },
+                    '60d': { undelivered: 14, requests: 980, attMarked: 830, attDays: 42, avgDelivery: 6.8 },
+                    '90d': { undelivered: 22, requests: 1440, attMarked: 1240, attDays: 64, avgDelivery: 6.8 },
+                  },
+                },
+                {
+                  id: 'dmm-upper',
+                  name: 'Upper School',
+                  students: 520,
+                  verified: 450,
+                  dismissals: 420,
+                  attendance: 440,
+                  canteen: 360,
+                  transportEnrolled: 260,
+                  transportActive: 230,
+                  adoption: {
+                    '30d': { dismissals: 310, attendance: 330, canteen: 250, transport: 190 },
+                    '60d': { dismissals: 370, attendance: 400, canteen: 280, transport: 210 },
+                    '90d': { dismissals: 430, attendance: 470, canteen: 320, transport: 230 },
+                  },
+                  staff: {
+                    '30d': { undelivered: 14, requests: 710, attMarked: 590, attDays: 16, avgDelivery: 6.5 },
+                    '60d': { undelivered: 20, requests: 1320, attMarked: 1120, attDays: 34, avgDelivery: 6.4 },
+                    '90d': { undelivered: 28, requests: 1950, attMarked: 1700, attDays: 52, avgDelivery: 6.3 },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const quickRanges = [
+        { label: 'This Week', value: '7d' },
+        { label: 'This Month', value: '30d' },
+        { label: 'Past 60 days', value: '60d' },
+        { label: 'Past 90 days', value: '90d' },
+        { label: 'Past 120 days', value: '120d' },
+      ];
+
+      const formatter = new Intl.NumberFormat('en-US');
+
+      const toPercent = (value, total) => {
+        if (!total) return '0%';
+        return `${Math.round((value / total) * 100)}%`;
+      };
+
+      const mergeLevels = (levels) =>
+        levels.reduce(
+          (acc, level) => {
+            const add = (key, target = 'students') => (acc[key] += level[key] || level[target] || 0);
+            add('students');
+            add('verified');
+            add('dismissals');
+            add('attendance');
+            add('canteen');
+            add('transportEnrolled');
+            add('transportActive');
+            return acc;
+          },
+          {
+            students: 0,
+            verified: 0,
+            dismissals: 0,
+            attendance: 0,
+            canteen: 0,
+            transportEnrolled: 0,
+            transportActive: 0,
+          },
+        );
+
+      const aggregateTimeFrame = (levels, period, key) =>
+        levels.reduce((acc, level) => acc + (level.adoption?.[period]?.[key] || 0), 0);
+
+      const aggregateStaff = (levels, period, metric) =>
+        levels.reduce((acc, level) => acc + (level.staff?.[period]?.[metric] || 0), 0);
+
+      const flattenEntities = (data) => {
+        const tree = data.map((brand) => ({
+          title: `${brand.name} (${brand.curriculum})`,
+          value: brand.id,
+          selectable: true,
+          children: brand.branches.map((branch) => ({
+            title: `${branch.name} — ${branch.city}`,
+            value: branch.id,
+            selectable: true,
+            children: branch.levels.map((level) => ({
+              title: `${level.name}`,
+              value: level.id,
+              selectable: true,
+            })),
+          })),
+        }));
+        return tree;
+      };
+
+      const deriveEntities = (data, selected, mode) => {
+        const ids = new Set(selected);
+        if (mode === 'brand') {
+          return data
+            .filter((brand) => ids.has(brand.id))
+            .map((brand) => {
+              const levels = brand.branches.flatMap((b) => b.levels);
+              return {
+                key: brand.id,
+                name: brand.name,
+                scope: 'Brand',
+                curriculum: brand.curriculum,
+                city: `${brand.branches.length} branches`,
+                metrics: mergeLevels(levels),
+                adoption: {
+                  '30d': {
+                    dismissals: aggregateTimeFrame(levels, '30d', 'dismissals'),
+                    attendance: aggregateTimeFrame(levels, '30d', 'attendance'),
+                    canteen: aggregateTimeFrame(levels, '30d', 'canteen'),
+                    transport: aggregateTimeFrame(levels, '30d', 'transport'),
+                  },
+                  '60d': {
+                    dismissals: aggregateTimeFrame(levels, '60d', 'dismissals'),
+                    attendance: aggregateTimeFrame(levels, '60d', 'attendance'),
+                    canteen: aggregateTimeFrame(levels, '60d', 'canteen'),
+                    transport: aggregateTimeFrame(levels, '60d', 'transport'),
+                  },
+                  '90d': {
+                    dismissals: aggregateTimeFrame(levels, '90d', 'dismissals'),
+                    attendance: aggregateTimeFrame(levels, '90d', 'attendance'),
+                    canteen: aggregateTimeFrame(levels, '90d', 'canteen'),
+                    transport: aggregateTimeFrame(levels, '90d', 'transport'),
+                  },
+                },
+                staff: {
+                  '30d': {
+                    undelivered: aggregateStaff(levels, '30d', 'undelivered'),
+                    requests: aggregateStaff(levels, '30d', 'requests'),
+                    attMarked: aggregateStaff(levels, '30d', 'attMarked'),
+                    attDays: aggregateStaff(levels, '30d', 'attDays'),
+                    avgDelivery: (levels.reduce((acc, l) => acc + (l.staff?.['30d']?.avgDelivery || 0), 0) / levels.length).toFixed(1),
+                  },
+                  '60d': {
+                    undelivered: aggregateStaff(levels, '60d', 'undelivered'),
+                    requests: aggregateStaff(levels, '60d', 'requests'),
+                    attMarked: aggregateStaff(levels, '60d', 'attMarked'),
+                    attDays: aggregateStaff(levels, '60d', 'attDays'),
+                    avgDelivery: (levels.reduce((acc, l) => acc + (l.staff?.['60d']?.avgDelivery || 0), 0) / levels.length).toFixed(1),
+                  },
+                  '90d': {
+                    undelivered: aggregateStaff(levels, '90d', 'undelivered'),
+                    requests: aggregateStaff(levels, '90d', 'requests'),
+                    attMarked: aggregateStaff(levels, '90d', 'attMarked'),
+                    attDays: aggregateStaff(levels, '90d', 'attDays'),
+                    avgDelivery: (levels.reduce((acc, l) => acc + (l.staff?.['90d']?.avgDelivery || 0), 0) / levels.length).toFixed(1),
+                  },
+                },
+              };
+            });
+        }
+
+        if (mode === 'branch') {
+          return data.flatMap((brand) =>
+            brand.branches
+              .filter((branch) => ids.has(branch.id) || ids.has(brand.id))
+              .map((branch) => {
+                const levels = branch.levels;
+                return {
+                  key: branch.id,
+                  name: branch.name,
+                  scope: brand.name,
+                  curriculum: brand.curriculum,
+                  city: branch.city,
+                  metrics: mergeLevels(levels),
+                  adoption: {
+                    '30d': {
+                      dismissals: aggregateTimeFrame(levels, '30d', 'dismissals'),
+                      attendance: aggregateTimeFrame(levels, '30d', 'attendance'),
+                      canteen: aggregateTimeFrame(levels, '30d', 'canteen'),
+                      transport: aggregateTimeFrame(levels, '30d', 'transport'),
+                    },
+                    '60d': {
+                      dismissals: aggregateTimeFrame(levels, '60d', 'dismissals'),
+                      attendance: aggregateTimeFrame(levels, '60d', 'attendance'),
+                      canteen: aggregateTimeFrame(levels, '60d', 'canteen'),
+                      transport: aggregateTimeFrame(levels, '60d', 'transport'),
+                    },
+                    '90d': {
+                      dismissals: aggregateTimeFrame(levels, '90d', 'dismissals'),
+                      attendance: aggregateTimeFrame(levels, '90d', 'attendance'),
+                      canteen: aggregateTimeFrame(levels, '90d', 'canteen'),
+                      transport: aggregateTimeFrame(levels, '90d', 'transport'),
+                    },
+                  },
+                  staff: {
+                    '30d': {
+                      undelivered: aggregateStaff(levels, '30d', 'undelivered'),
+                      requests: aggregateStaff(levels, '30d', 'requests'),
+                      attMarked: aggregateStaff(levels, '30d', 'attMarked'),
+                      attDays: aggregateStaff(levels, '30d', 'attDays'),
+                      avgDelivery: (levels.reduce((acc, l) => acc + (l.staff?.['30d']?.avgDelivery || 0), 0) / levels.length).toFixed(1),
+                    },
+                    '60d': {
+                      undelivered: aggregateStaff(levels, '60d', 'undelivered'),
+                      requests: aggregateStaff(levels, '60d', 'requests'),
+                      attMarked: aggregateStaff(levels, '60d', 'attMarked'),
+                      attDays: aggregateStaff(levels, '60d', 'attDays'),
+                      avgDelivery: (levels.reduce((acc, l) => acc + (l.staff?.['60d']?.avgDelivery || 0), 0) / levels.length).toFixed(1),
+                    },
+                    '90d': {
+                      undelivered: aggregateStaff(levels, '90d', 'undelivered'),
+                      requests: aggregateStaff(levels, '90d', 'requests'),
+                      attMarked: aggregateStaff(levels, '90d', 'attMarked'),
+                      attDays: aggregateStaff(levels, '90d', 'attDays'),
+                      avgDelivery: (levels.reduce((acc, l) => acc + (l.staff?.['90d']?.avgDelivery || 0), 0) / levels.length).toFixed(1),
+                    },
+                  },
+                };
+              }),
+          );
+        }
+
+        return data.flatMap((brand) =>
+          brand.branches.flatMap((branch) =>
+            branch.levels
+              .filter((level) => ids.has(level.id) || ids.has(branch.id) || ids.has(brand.id))
+              .map((level) => ({
+                key: level.id,
+                name: level.name,
+                scope: `${branch.name} • ${brand.name}`,
+                curriculum: brand.curriculum,
+                city: branch.city,
+                metrics: mergeLevels([level]),
+                adoption: level.adoption,
+                staff: level.staff,
+              })),
+          ),
+        );
+      };
+
+      const metricCards = [
+        { key: 'verified', title: 'Verified Students' },
+        { key: 'dismissals', title: 'Dismissals Requested' },
+        { key: 'attendance', title: 'Attendance Marked' },
+        { key: 'canteen', title: 'Wallets Created' },
+        { key: 'transportActive', title: 'Transportation Active' },
+      ];
+
+      const adoptionCards = [
+        { key: 'dismissals', title: 'Dismissals (unique students)' },
+        { key: 'attendance', title: 'Attendance (unique students)' },
+        { key: 'canteen', title: 'Canteen Purchasers' },
+        { key: 'transport', title: 'Transportation (unique riders)' },
+      ];
+
+      const staffCards = [
+        { key: 'undelivered', title: 'Undelivered pick-up requests' },
+        { key: 'attMarked', title: 'Students with attendance marked' },
+        { key: 'avgDelivery', title: 'Average dismissal delivery (min)', type: 'time' },
+        { key: 'attDays', title: 'Days attendance recorded' },
+      ];
+
+      function CurrentMetrics({ entity }) {
+        return (
+          <div className="card-grid">
+            {metricCards.map((card) => {
+              const total =
+                card.key === 'transportActive'
+                  ? entity.metrics.transportEnrolled || entity.metrics.students
+                  : entity.metrics.students;
+              const value = entity.metrics[card.key] || 0;
+              return (
+                <Card key={card.key} size="small" title={card.title} bordered style={{ background: '#fff' }}>
+                  <Statistic
+                    value={value}
+                    valueStyle={{ fontWeight: 700 }}
+                    suffix={
+                      <Tag color="blue" style={{ marginLeft: 8 }}>
+                        {toPercent(value, total)} of total
+                      </Tag>
+                    }
+                  />
+                  <Progress percent={Math.round((value / total) * 100)} showInfo={false} style={{ marginTop: 10 }} />
+                  <Text type="secondary">Based on {formatter.format(total)} enrolled students.</Text>
+                </Card>
+              );
+            })}
+          </div>
+        );
+      }
+
+      function AdoptionMetrics({ entity, period }) {
+        const adoption = entity.adoption?.[period] || {};
+        return (
+          <div className="card-grid">
+            {adoptionCards.map((card) => (
+              <Card key={card.key} size="small" title={card.title} bordered>
+                <Statistic
+                  value={adoption[card.key] || 0}
+                  valueStyle={{ fontWeight: 700 }}
+                  suffix={
+                    <Tag color="purple" style={{ marginLeft: 8 }}>
+                      {toPercent(adoption[card.key] || 0, entity.metrics.students)} of roster
+                    </Tag>
+                  }
+                />
+                <Text type="secondary">Measured over the selected date window.</Text>
+              </Card>
+            ))}
+          </div>
+        );
+      }
+
+      function StaffMetrics({ entity, period }) {
+        const staff = entity.staff?.[period] || {};
+        const pickupPercent = toPercent(staff.undelivered || 0, staff.requests || 1);
+        const attendancePercent = toPercent(staff.attMarked || 0, entity.metrics.students || 1);
+        return (
+          <div className="card-grid">
+            {staffCards.map((card) => (
+              <Card key={card.key} size="small" title={card.title} bordered>
+                <Statistic
+                  value={card.type === 'time' ? Number(staff[card.key] || 0) : staff[card.key] || 0}
+                  valueStyle={{ fontWeight: 700 }}
+                  suffix={
+                    card.key === 'undelivered' ? (
+                      <Tag color="volcano" style={{ marginLeft: 8 }}>{pickupPercent} of requests</Tag>
+                    ) : card.key === 'attMarked' ? (
+                      <Tag color="green" style={{ marginLeft: 8 }}>{attendancePercent} of roster</Tag>
+                    ) : null
+                  }
+                />
+                <Text type="secondary">
+                  {card.key === 'undelivered'
+                    ? 'Includes all pick-up methods (QR, app, self-checkout, bus).'
+                    : card.key === 'avgDelivery'
+                      ? 'Average time to deliver dismissal requests.'
+                      : 'Staff activity measured for the selected window.'}
+                </Text>
+              </Card>
+            ))}
+          </div>
+        );
+      }
+
+      const columns = [
+        { title: 'Entity', dataIndex: 'name', key: 'name', render: (text) => <strong>{text}</strong> },
+        { title: 'Scope', dataIndex: 'scope', key: 'scope' },
+        { title: 'Curriculum', dataIndex: 'curriculum', key: 'curriculum', render: (cur) => <Tag color="blue">{cur}</Tag> },
+        { title: 'Verified', dataIndex: ['metrics', 'verified'], key: 'verified' },
+        { title: 'Dismissals', dataIndex: ['metrics', 'dismissals'], key: 'dismissals' },
+        { title: 'Attendance', dataIndex: ['metrics', 'attendance'], key: 'attendance' },
+        { title: 'Wallets', dataIndex: ['metrics', 'canteen'], key: 'canteen' },
+        { title: 'Transport Active', dataIndex: ['metrics', 'transportActive'], key: 'transportActive' },
+        {
+          title: 'Roster',
+          dataIndex: ['metrics', 'students'],
+          key: 'students',
+          render: (v) => formatter.format(v),
+        },
+      ];
+
+      function DashboardApp() {
+        const [data] = useState(defaultData);
+        const [viewMode, setViewMode] = useState('brand');
+        const [selected, setSelected] = useState(() => data.map((b) => b.id));
+        const [period, setPeriod] = useState('30d');
+        const [customRange, setCustomRange] = useState(null);
+        const [savedViews, setSavedViews] = useState(() => {
+          const cached = localStorage.getItem('lytics-views');
+          if (cached) return JSON.parse(cached);
+          return [
+            { name: 'All brands', viewMode: 'brand', selected: data.map((b) => b.id) },
+            { name: 'Rowad branches', viewMode: 'branch', selected: data[0]?.branches.map((b) => b.id) || [] },
+            { name: 'International only', viewMode: 'brand', selected: ['me-international'] },
+          ];
+        });
+        const [viewName, setViewName] = useState('');
+
+        useEffect(() => {
+          localStorage.setItem('lytics-views', JSON.stringify(savedViews));
+        }, [savedViews]);
+
+        const treeData = useMemo(() => flattenEntities(data), [data]);
+
+        const entities = useMemo(() => deriveEntities(data, selected, viewMode), [data, selected, viewMode]);
+
+        const aggregateTotals = useMemo(() => {
+          const totals = entities.reduce(
+            (acc, entity) => {
+              Object.keys(acc.metrics).forEach((key) => {
+                acc.metrics[key] += entity.metrics[key] || 0;
+              });
+              ['30d', '60d', '90d'].forEach((p) => {
+                acc.adoption[p].dismissals += entity.adoption?.[p]?.dismissals || 0;
+                acc.adoption[p].attendance += entity.adoption?.[p]?.attendance || 0;
+                acc.adoption[p].canteen += entity.adoption?.[p]?.canteen || 0;
+                acc.adoption[p].transport += entity.adoption?.[p]?.transport || 0;
+                acc.staff[p].undelivered += Number(entity.staff?.[p]?.undelivered || 0);
+                acc.staff[p].requests += Number(entity.staff?.[p]?.requests || 0);
+                acc.staff[p].attMarked += Number(entity.staff?.[p]?.attMarked || 0);
+                acc.staff[p].attDays += Number(entity.staff?.[p]?.attDays || 0);
+                acc.staff[p].avgDelivery += Number(entity.staff?.[p]?.avgDelivery || 0);
+              });
+              acc.count += 1;
+              return acc;
+            },
+            {
+              metrics: { students: 0, verified: 0, dismissals: 0, attendance: 0, canteen: 0, transportEnrolled: 0, transportActive: 0 },
+              adoption: {
+                '30d': { dismissals: 0, attendance: 0, canteen: 0, transport: 0 },
+                '60d': { dismissals: 0, attendance: 0, canteen: 0, transport: 0 },
+                '90d': { dismissals: 0, attendance: 0, canteen: 0, transport: 0 },
+              },
+              staff: {
+                '30d': { undelivered: 0, requests: 0, attMarked: 0, attDays: 0, avgDelivery: 0 },
+                '60d': { undelivered: 0, requests: 0, attMarked: 0, attDays: 0, avgDelivery: 0 },
+                '90d': { undelivered: 0, requests: 0, attMarked: 0, attDays: 0, avgDelivery: 0 },
+              },
+              count: 0,
+            },
+          );
+
+          ['30d', '60d', '90d'].forEach((p) => {
+            totals.staff[p].avgDelivery = totals.count ? (totals.staff[p].avgDelivery / totals.count).toFixed(1) : 0;
+          });
+
+          return totals;
+        }, [entities]);
+
+        const handleSaveView = () => {
+          if (!viewName || !selected.length) return;
+          setSavedViews((prev) => [...prev, { name: viewName, viewMode, selected }]);
+          setViewName('');
+        };
+
+        const handleApplySaved = (view) => {
+          setViewMode(view.viewMode);
+          setSelected(view.selected);
+        };
+
+        const periodLabel = customRange
+          ? `${customRange[0].format('D MMM')} – ${customRange[1].format('D MMM')}`
+          : quickRanges.find((r) => r.value === period)?.label || 'Custom';
+
+        return (
+          <Layout style={{ background: 'transparent' }}>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} xl={17}>
+                <Card bordered={false} bodyStyle={{ padding: 20 }} style={{ boxShadow: '0 12px 40px rgba(16,35,158,0.08)' }}>
+                  <Flex vertical gap="small">
+                    <Space wrap size="middle" align="center" style={{ width: '100%' }}>
+                      <Segmented
+                        value={viewMode}
+                        onChange={setViewMode}
+                        options=[
+                          { label: 'Brand roll-up', value: 'brand' },
+                          { label: 'Branches', value: 'branch' },
+                          { label: 'Levels', value: 'level' },
+                        ]
+                      />
+                      <TreeSelect
+                        treeData={treeData}
+                        treeCheckable
+                        showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                        placeholder="Pick brands, branches, or levels"
+                        style={{ minWidth: 280, flex: 1 }}
+                        value={selected}
+                        onChange={setSelected}
+                      />
+                      <Select
+                        value={period}
+                        style={{ minWidth: 160 }}
+                        onChange={(val) => {
+                          setPeriod(val);
+                          setCustomRange(null);
+                        }}
+                        options={quickRanges}
+                      />
+                      <RangePicker
+                        onChange={(dates) => {
+                          setCustomRange(dates);
+                          setPeriod('custom');
+                        }}
+                      />
+                    </Space>
+                    <div className="pill">
+                      <span>Saved view</span>
+                      <strong>{periodLabel}</strong>
+                      <span>•</span>
+                      <span>{entities.length} selections</span>
+                    </div>
+                  </Flex>
+                </Card>
+
+                <Title level={4} className="section-title">Current Verification & Activation</Title>
+                <Row gutter={[16, 16]}>
+                  <Col span={24}>
+                    <Card title="Portfolio snapshot" bordered={false}>
+                      <CurrentMetrics entity={{ metrics: aggregateTotals.metrics }} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Title level={4} className="section-title">Adoption (date filtered)</Title>
+                <Row gutter={[16, 16]}>
+                  <Col span={24}>
+                    <Card
+                      title={
+                        <Space>
+                          <span>Aggregate across selection</span>
+                          <Tag color="purple">{periodLabel}</Tag>
+                        </Space>
+                      }
+                      bordered={false}
+                    >
+                      <AdoptionMetrics entity={{ adoption: aggregateTotals.adoption, metrics: aggregateTotals.metrics }} period={period === 'custom' ? '30d' : period} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Title level={4} className="section-title">Staff performance</Title>
+                <Row gutter={[16, 16]}>
+                  <Col span={24}>
+                    <Card title="Delivery reliability" bordered={false}>
+                      <StaffMetrics
+                        entity={{ staff: aggregateTotals.staff, metrics: aggregateTotals.metrics }}
+                        period={period === 'custom' ? '30d' : period}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+
+                <Title level={4} className="section-title">Breakdowns</Title>
+                <Tabs
+                  defaultActiveKey="table"
+                  items=[
+                    {
+                      key: 'table',
+                      label: 'By selection',
+                      children: (
+                        <Table
+                          dataSource={entities}
+                          columns={columns}
+                          pagination={{ pageSize: 5, showSizeChanger: false }}
+                          rowKey="key"
+                          bordered
+                        />
+                      ),
+                    },
+                    {
+                      key: 'side-by-side',
+                      label: 'Side-by-side cards',
+                      children: (
+                        <div className="card-grid">
+                          {entities.map((entity) => (
+                            <Card
+                              key={entity.key}
+                              title={
+                                <Space>
+                                  <strong>{entity.name}</strong>
+                                  <Tag>{entity.scope}</Tag>
+                                </Space>
+                              }
+                              extra={<Tag color="blue">{entity.curriculum}</Tag>}
+                            >
+                              <Space direction="vertical" size="small">
+                                <Text type="secondary">Roster: {formatter.format(entity.metrics.students)}</Text>
+                                <Text>Verified: {entity.metrics.verified} ({toPercent(entity.metrics.verified, entity.metrics.students)})</Text>
+                                <Text>Dismissals: {entity.metrics.dismissals} ({toPercent(entity.metrics.dismissals, entity.metrics.students)})</Text>
+                                <Text>Attendance: {entity.metrics.attendance} ({toPercent(entity.metrics.attendance, entity.metrics.students)})</Text>
+                                <Text>Wallets: {entity.metrics.canteen} ({toPercent(entity.metrics.canteen, entity.metrics.students)})</Text>
+                                <Text>Transportation: {entity.metrics.transportActive}/{entity.metrics.transportEnrolled}</Text>
+                              </Space>
+                            </Card>
+                          ))}
+                        </div>
+                      ),
+                    },
+                  ]
+                />
+              </Col>
+
+              <Col xs={24} xl={7}>
+                <Card title="Saved executive views" bordered={false} extra={<Tag color="green">Read-only</Tag>}>
+                  <List
+                    dataSource={savedViews}
+                    renderItem={(item) => (
+                      <List.Item className="saved-view">
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                          <Space align="center" justify="space-between" style={{ width: '100%' }}>
+                            <Space>
+                              <strong>{item.name}</strong>
+                              <Tag color="blue">{item.viewMode}</Tag>
+                            </Space>
+                            <Button size="small" onClick={() => handleApplySaved(item)}>
+                              Apply
+                            </Button>
+                          </Space>
+                          <Text type="secondary">{item.selected.length} picks • persists per user</Text>
+                        </Space>
+                      </List.Item>
+                    )}
+                  />
+                  <Divider />
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Text strong>Create a personalised lens</Text>
+                    <Input
+                      placeholder="Name your view (e.g. CEO: International)"
+                      value={viewName}
+                      onChange={(e) => setViewName(e.target.value)}
+                    />
+                    <Button type="primary" block onClick={handleSaveView} disabled={!viewName || !selected.length}>
+                      Save current selection
+                    </Button>
+                    <Text type="secondary">
+                      Views are stored locally for privacy and can reflect brand, branch, or level filters.
+                    </Text>
+                  </Space>
+                </Card>
+
+                <Card title="How to read this dashboard" style={{ marginTop: 16 }} bordered={false}>
+                  <Space direction="vertical">
+                    <Paragraph style={{ marginBottom: 8 }}>
+                      <Tag color="blue">Verification</Tag> and <Tag color="cyan">Activation</Tag> show the latest status
+                      of verified parents and first-time product use, without date filters.
+                    </Paragraph>
+                    <Paragraph style={{ marginBottom: 8 }}>
+                      <Tag color="purple">Adoption</Tag> and <Tag color="orange">Staff performance</Tag> respond to the
+                      selected date window (week, month, 30/60/90/120 days, or custom range).
+                    </Paragraph>
+                    <Paragraph style={{ marginBottom: 0 }}>
+                      Use saved views to tailor brand groupings (e.g., by curriculum or geography) for repeatable exec
+                      reporting.
+                    </Paragraph>
+                  </Space>
+                </Card>
+              </Col>
+            </Row>
+          </Layout>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<DashboardApp />);
+    </script>
+  </body>
+</html>
